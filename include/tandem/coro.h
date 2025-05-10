@@ -9,6 +9,6 @@ void td_free(td_rt*);
 
 td_coro *td_spawn(td_rt*, void (*fn)(td_rt*), size_t stack_size);
 
-void td_suspend(td_rt*);
-void td_resume(td_rt*, td_coro*);
+extern void td_suspend(td_rt*);
+extern void td_resume(td_rt*, td_coro*);
 #endif

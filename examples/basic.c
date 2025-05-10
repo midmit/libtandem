@@ -30,4 +30,6 @@ int main() {
   }
 
   td_free(rt);
+
+  return 0;
 }

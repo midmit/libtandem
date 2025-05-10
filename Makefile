@@ -1,37 +1,30 @@
 CC_FLAGS = -ggdb
 VERSION = 0.1.0
 
-all: libtandem.so libtandem.a remove_o
+all: libtandem.so libtandem.a examples clean
 
-libtandem.so: tandem.o
-	cd build && cc $(CC_FLAGS) tandem.o -shared -o libtandem.so.$(VERSION)
-	cd build && ln -sf libtandem.so.$(VERSION) libtandem.so
+libtandem.a: libtandem.so
+	cd build && ar rc libtandem.a coro.o coro_vec.o x86_64.o
 
-libtandem.a: tandem.o
-	cd build && ar rcs libtandem.a tandem.o
-
-remove_o: tandem.o
-	rm build/tandem.o
-
-tandem.o: include/coro_vec.h include/tandem/coro.h src/coro.c src/coro_vec.c
+libtandem.so: include/coro_vec.h include/tandem/coro.h src/coro.c src/coro_vec.c
 	mkdir -p build/ build/include
 
 	cd build && cc -fPIC $(CC_FLAGS) -I../include -c ../src/coro.c -o coro.o
 	cd build && cc $(CC_FLAGS) -I../include -c ../src/coro_vec.c -o coro_vec.o
 	cc $(CC_FLAGS) -c src/arch/x86_64.s -o build/x86_64.o
-	cd build && cc $(CC_FLAGS) -shared coro.o coro_vec.o x86_64.o -o tandem.o
+	cd build && cc $(CC_FLAGS) -shared coro.o coro_vec.o x86_64.o -o libtandem.so
 
-	cd build && rm -f coro.o coro_vec.o x86_64.o
 
-	cp -r include/tandem/ build/include/tandem
+	cp -r include/ build/
 
-examples: libtandem.so examples/*
+examples: libtandem.a
 	mkdir -p build/examples
-	cc $(CC_FLAGS) -Wall -Iinclude -Lbuild -ltandem \
-	-Wl,-rpath build/ \
-	examples/basic.c -o build/examples/basic
+	cc $(CC_FLAGS) -Wall \
+	examples/basic.c -o build/examples/basic \
+	-Ibuild/include/ -Lbuild -l:libtandem.a -Wl,-rpath=build
 
 clean:
-	rm -r build/
+	cd build && rm -f coro.o coro_vec.o x86_64.o
 
-.PHONY: libtandem.so libtandem.a
+cleanall:
+	rm -r build/
