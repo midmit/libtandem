@@ -24,5 +24,6 @@ __td_switch:
     leaq switch(%rip), %rax
     movq %rax, (%rdi)
     jmp *(%rsi)
+
 switch:
     ret
